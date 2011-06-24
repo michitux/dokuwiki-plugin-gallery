@@ -197,6 +197,21 @@ class syntax_plugin_gallery extends DokuWiki_Syntax_Plugin {
                     }
                 }
 
+                $width = $enclosure->get_width();
+                $height = $enclosure->get_height();
+
+                // Special handling for Flickr feeds
+                if (preg_match('/^https?:\/\/farm\d\.static\.flickr\.com\/.*_o\.jpg$/i', $ilink)) {
+                    $ilink = str_replace('_s.', '_b.', $enclosure->get_thumbnail());
+                    if ($width > $height) {
+                        $height = (int)(($height*1024)/$width);
+                        $width = 1024;
+                    } else {
+                        $width = (int)(($width*1024)/$height);
+                        $height = 1024;
+                    }
+                }
+
                 $files[] = array(
                     'id'     => $ilink,
                     'isimg'  => true,
@@ -204,8 +219,8 @@ class syntax_plugin_gallery extends DokuWiki_Syntax_Plugin {
                     // decode to avoid later double encoding
                     'title'  => SimplePie_Misc::htmlspecialchars_decode($enclosure->get_title(),ENT_COMPAT),
                     'desc'   => strip_tags(SimplePie_Misc::htmlspecialchars_decode($enclosure->get_description(),ENT_COMPAT)),
-                    'width'  => $enclosure->get_width(),
-                    'height' => $enclosure->get_height(),
+                    'width'  => $width,
+                    'height' => $height,
                     'mtime'  => $item->get_date('U'),
                     'ctime'  => $item->get_date('U'),
                     'detail' => $link,
